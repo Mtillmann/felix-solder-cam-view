@@ -10,13 +10,13 @@
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script>
 
-        let flipX = false;
         let flipY = false;
+        let flipX = false;
 
         function setState() {
             const data = JSON.stringify({
-                flipX,
-                flipY
+                flipY,
+                flipX
             })
 
             localStorage.setItem('cam-view-state', data)
@@ -33,8 +33,9 @@
 
             const constraints = {
                 video: {
-                    width: { ideal: 19200 },
-                    height: { ideal: 10800 }
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    frameRate: { ideal: 60 },
                 }
             }
 
@@ -48,21 +49,18 @@
             const settings = videoTrack.getSettings()
             //get aspect ratio
             const aspectRatio = settings.aspectRatio
-            console.log(aspectRatio)
             let ratio = '16x9'
             if (aspectRatio <= 4 / 3) {
                 ratio = '4x3';
             }
-
             document.querySelector('.ratio').classList.add(`ratio-${ratio}`)
 
+            //get current frame rate
+            const frameRate = settings.frameRate
+            console.log(frameRate)
 
+            document.querySelector('#videoInfo').innerHTML = `${settings.width}x${settings.height}@${frameRate}`
 
-            //get all supported video resolutions
-            const supportedConstraints = navigator.mediaDevices.getSupportedConstraints()
-            const supportedResolutions = supportedConstraints.width ?? []
-
-            console.log(supportedResolutions)
 
 
             /*
@@ -72,17 +70,39 @@
                 canvas.getContext('2d').drawImage(video, 0, 0)
             });
 */
+            document.querySelector('.download').addEventListener('click', () => {
+                canvas.width = video.videoWidth
+                canvas.height = video.videoHeight
+
+                const ctx = canvas.getContext('2d')
+                ctx.translate(canvas.width / 2, canvas.height / 2)
+                if (flipY) {
+                    ctx.scale(-1, 1)
+                }
+                if (flipX) {
+                    ctx.scale(1, -1)
+                }
+                ctx.translate(-canvas.width / 2, -canvas.height / 2)
+                ctx.drawImage(video, 0, 0)
+
+                
+                const a = document.createElement('a')
+                a.href = canvas.toDataURL()
+                a.download = 'screenshot.png'
+                a.click()
+            });
+
             document.querySelector('.flip-vertical').addEventListener('click', (e) => {
-                flipX = !flipX
-                e.target.classList.toggle('active', flipX)
-                video.classList.toggle('flipped-vertical', flipX)
+                flipY = !flipY
+                e.currentTarget.classList.toggle('active', flipY)
+                video.classList.toggle('flipped-vertical', flipY)
                 setState()
             });
 
             document.querySelector('.flip-horizontal').addEventListener('click', (e) => {
-                flipY = !flipY
-                e.target.classList.toggle('active', flipY)
-                video.classList.toggle('flipped-horizontal', flipY)
+                flipX = !flipX
+                e.currentTarget.classList.toggle('active', flipX)
+                video.classList.toggle('flipped-horizontal', flipX)
                 setState()
             });
 
@@ -97,12 +117,16 @@
                     document.querySelector('.toggle-fullscreen').click()
                 }
 
-                if (e.key === 'h') {
+                if (e.key === 'v') {
                     document.querySelector('.flip-vertical').click()
                 }
 
-                if (e.key === 'v') {
+                if (e.key === 'h') {
                     document.querySelector('.flip-horizontal').click()
+                }
+
+                if (e.key === 'd') {
+                    document.querySelector('.download').click()
                 }
 
             })
@@ -117,10 +141,10 @@
 
             const storedState = JSON.parse(localStorage.getItem('cam-view-state') ?? '{}')
 
-            if (storedState.flipX) {
+            if (storedState.flipY) {
                 document.querySelector('.flip-vertical').click()
             }
-            if (storedState.flipY) {
+            if (storedState.flipX) {
                 document.querySelector('.flip-horizontal').click()
             }
 
@@ -174,6 +198,13 @@
         body:not(.is-fullscreen) .hidden-on-fullscreen {
             display: initial;
         }
+
+        canvas{
+            position:absolute;
+            left:-200vw;
+            top: -200vh;
+
+        }
     </style>
 </head>
 
@@ -182,22 +213,31 @@
     <div class="position-absolute ratio">
         <video class="position-absolute start-50 top-50"></video>
     </div>
-    <div class="btn-group btn-group-lg position-absolute bottom-0 end-0">
+
+    <div id="videoInfo"
+        class="small position-absolute start-0 bottom-0 bg-black text-white font-monospace bg-opacity-25">
+
+    </div>
+
+    <div class="btn-group-vertical btn-group-lg position-absolute bottom-0 end-0">
         <button class="btn btn-lg btn-primary toggle-fullscreen">
             <i class="bi bi-fullscreen hidden-on-fullscreen"></i>
-            <i class="bi bi-fullscreen-exit visible-on-fullscreen"></i>(f)
+            <i class="bi bi-fullscreen-exit visible-on-fullscreen"></i><code class="ms-2 text-white">f</code>
         </button>
         <button class="btn btn-lg btn-primary flip-vertical">
-            <i class="bi bi-symmetry-vertical"></i>(v)
+            <i class="bi bi-symmetry-vertical"></i><code class="ms-2 text-white">v</code>
         </button>
         <button class="btn btn-lg btn-primary flip-horizontal">
-            <i class="bi bi-symmetry-horizontal"></i>(h)
+            <i class="bi bi-symmetry-horizontal"></i><code class="ms-2 text-white">h</code>
+        </button>
+        <button class="btn btn-lg btn-primary download">
+            <i class="bi bi-download"></i><code class="ms-2 text-white">d</code>
         </button>
     </div>
 
-    <!--
+
     <canvas></canvas>
-    -->
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
         crossorigin="anonymous"></script>
