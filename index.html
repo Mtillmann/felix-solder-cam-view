@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>CAM VIEW</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <script>
+
+        let flipX = false;
+        let flipY = false;
+
+        function setState(){
+            const data = JSON.stringify({
+                flipX,
+                flipY
+            })
+
+            localStorage.setItem('cam-view-state', data)
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+
+
+            document.documentElement.setAttribute('data-bs-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+
+            const video = document.querySelector('video')
+            const canvas = document.querySelector('canvas')
+            const button = document.querySelector('button')
+
+            const constraints = {
+                video: true,
+            }
+
+
+            const stream = await navigator.mediaDevices.getUserMedia(constraints)
+            video.srcObject = stream;
+            await video.play()
+
+            /*
+            video.addEventListener('click', () => {
+                canvas.width = video.videoWidth
+                canvas.height = video.videoHeight
+                canvas.getContext('2d').drawImage(video, 0, 0)
+            });
+*/
+            document.querySelector('.flip-horizontal').addEventListener('click', (e) => {
+                flipX = !flipX
+                e.target.classList.toggle('active', flipX)
+                video.classList.toggle('flipped-horizontal', flipX)
+                setState()
+            });
+
+            document.querySelector('.flip-vertical').addEventListener('click', (e) => {
+                flipY = !flipY
+                e.target.classList.toggle('active', flipY)
+                video.classList.toggle('flipped-vertical', flipY)
+                setState()
+            });
+
+            document.addEventListener('fullscreenchange', (e) => {
+                if (!document.fullscreenElement) {
+                    document.querySelector('.toggle-fullscreen').classList.remove('active')
+                }
+            })
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'f') {
+                    document.querySelector('.toggle-fullscreen').click()
+                }
+
+                if (e.key === 'h') {
+                    document.querySelector('.flip-horizontal').click()
+                }
+
+                if (e.key === 'v') {
+                    document.querySelector('.flip-vertical').click()
+                }
+
+            })
+
+            document.querySelector('.toggle-fullscreen').addEventListener('click', (e) => {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen()
+                    e.target.classList.add('active')
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen()
+                        e.target.classList.remove('active')
+                    }
+                }
+            })
+
+            const storedState = JSON.parse(localStorage.getItem('cam-view-state') ?? '{}')
+
+            if(storedState.flipX){
+                document.querySelector('.flip-horizontal').click()
+            }
+            if(storedState.flipY){
+                document.querySelector('.flip-vertical').click()
+            }
+
+
+
+        })
+
+    </script>
+    <style>
+        .flipped-horizontal {
+            transform: scaleX(-1) translate(50%, -50%);
+        }
+
+        .flipped-vertical {
+            transform: scaleY(-1) translate(-50%, 50%);
+        }
+
+        .flipped-horizontal.flipped-vertical {
+            transform: rotate(180deg) translate(50%, 50%);
+        }
+
+     
+        body{
+            width:100vw;
+            height:100vh;
+            overflow:hidden;
+            position: relative;
+        }
+
+        video{
+            height: 100vh;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+
+<body>
+
+    <video class="position-absolute start-50 top-50"></video>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+             
+                    
+             
+                <div class="btn-group position-absolute top-0 end-0">
+                    <button class="btn btn-primary toggle-fullscreen">Fullscreen</button>
+                    <button class="btn btn-primary flip-horizontal">Flip horizontal</button>
+                    <button class="btn btn-primary flip-vertical">Flip vertical</button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <!--
+    <canvas></canvas>
+    -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
