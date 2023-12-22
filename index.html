@@ -31,13 +31,38 @@
             const button = document.querySelector('button')
 
             const constraints = {
-                video: true,
+                video:  { 
+                            width: { ideal: 19200 }, 
+                            height: { ideal: 10800 } 
+                        }
             }
 
 
             const stream = await navigator.mediaDevices.getUserMedia(constraints)
             video.srcObject = stream;
             await video.play()
+
+            //get current video resolution
+            const videoTrack = stream.getVideoTracks()[0]
+            const settings = videoTrack.getSettings()
+            //get aspect ratio
+            const aspectRatio = settings.aspectRatio
+            console.log(aspectRatio)
+            let ratio = '16x9'
+            if(aspectRatio <= 4/3){
+                ratio = '4x3';
+            }
+
+            document.querySelector('.ratio').classList.add(`ratio-${ratio}`)
+
+
+            
+            //get all supported video resolutions
+            const supportedConstraints = navigator.mediaDevices.getSupportedConstraints()
+            const supportedResolutions = supportedConstraints.width ?? []
+
+            console.log(supportedResolutions)
+
 
             /*
             video.addEventListener('click', () => {
@@ -129,32 +154,28 @@
         }
 
         video{
-            height: 100vh;
+            
             transform: translate(-50%, -50%);
+        }
+
+        .ratio{
+            height:100vh;
+         
         }
     </style>
 </head>
 
 <body>
 
-    <video class="position-absolute start-50 top-50"></video>
-
-    <div class="container">
-        <div class="row">
-            <div class="col-12">
-             
-                    
-             
-                <div class="btn-group position-absolute top-0 end-0">
-                    <button class="btn btn-primary toggle-fullscreen">Fullscreen</button>
-                    <button class="btn btn-primary flip-horizontal">Flip horizontal</button>
-                    <button class="btn btn-primary flip-vertical">Flip vertical</button>
-                </div>
-
-            </div>
-        </div>
-
+    <div class="position-absolute ratio">
+        <video class="position-absolute start-50 top-50"></video>
     </div>
+    <div class="btn-group position-absolute top-0 end-0">
+        <button class="btn btn-primary toggle-fullscreen">Fullscreen</button>
+        <button class="btn btn-primary flip-horizontal">Flip horizontal</button>
+        <button class="btn btn-primary flip-vertical">Flip vertical</button>
+    </div>
+
     <!--
     <canvas></canvas>
     -->
