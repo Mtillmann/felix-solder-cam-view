@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CAM VIEW</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     <script>
@@ -12,7 +13,7 @@
         let flipX = false;
         let flipY = false;
 
-        function setState(){
+        function setState() {
             const data = JSON.stringify({
                 flipX,
                 flipY
@@ -31,10 +32,10 @@
             const button = document.querySelector('button')
 
             const constraints = {
-                video:  { 
-                            width: { ideal: 19200 }, 
-                            height: { ideal: 10800 } 
-                        }
+                video: {
+                    width: { ideal: 19200 },
+                    height: { ideal: 10800 }
+                }
             }
 
 
@@ -49,14 +50,14 @@
             const aspectRatio = settings.aspectRatio
             console.log(aspectRatio)
             let ratio = '16x9'
-            if(aspectRatio <= 4/3){
+            if (aspectRatio <= 4 / 3) {
                 ratio = '4x3';
             }
 
             document.querySelector('.ratio').classList.add(`ratio-${ratio}`)
 
 
-            
+
             //get all supported video resolutions
             const supportedConstraints = navigator.mediaDevices.getSupportedConstraints()
             const supportedResolutions = supportedConstraints.width ?? []
@@ -71,24 +72,24 @@
                 canvas.getContext('2d').drawImage(video, 0, 0)
             });
 */
-            document.querySelector('.flip-horizontal').addEventListener('click', (e) => {
+            document.querySelector('.flip-vertical').addEventListener('click', (e) => {
                 flipX = !flipX
                 e.target.classList.toggle('active', flipX)
-                video.classList.toggle('flipped-horizontal', flipX)
+                video.classList.toggle('flipped-vertical', flipX)
                 setState()
             });
 
-            document.querySelector('.flip-vertical').addEventListener('click', (e) => {
+            document.querySelector('.flip-horizontal').addEventListener('click', (e) => {
                 flipY = !flipY
                 e.target.classList.toggle('active', flipY)
-                video.classList.toggle('flipped-vertical', flipY)
+                video.classList.toggle('flipped-horizontal', flipY)
                 setState()
             });
 
             document.addEventListener('fullscreenchange', (e) => {
-                if (!document.fullscreenElement) {
-                    document.querySelector('.toggle-fullscreen').classList.remove('active')
-                }
+
+                document.querySelector('.toggle-fullscreen').classList.toggle('active', document.fullscreenElement)
+                document.querySelector('body').classList.toggle('is-fullscreen', document.fullscreenElement)
             })
 
             document.addEventListener('keydown', (e) => {
@@ -97,11 +98,11 @@
                 }
 
                 if (e.key === 'h') {
-                    document.querySelector('.flip-horizontal').click()
+                    document.querySelector('.flip-vertical').click()
                 }
 
                 if (e.key === 'v') {
-                    document.querySelector('.flip-vertical').click()
+                    document.querySelector('.flip-horizontal').click()
                 }
 
             })
@@ -109,22 +110,18 @@
             document.querySelector('.toggle-fullscreen').addEventListener('click', (e) => {
                 if (!document.fullscreenElement) {
                     document.documentElement.requestFullscreen()
-                    e.target.classList.add('active')
                 } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen()
-                        e.target.classList.remove('active')
-                    }
+                    document.exitFullscreen()
                 }
             })
 
             const storedState = JSON.parse(localStorage.getItem('cam-view-state') ?? '{}')
 
-            if(storedState.flipX){
-                document.querySelector('.flip-horizontal').click()
-            }
-            if(storedState.flipY){
+            if (storedState.flipX) {
                 document.querySelector('.flip-vertical').click()
+            }
+            if (storedState.flipY) {
+                document.querySelector('.flip-horizontal').click()
             }
 
 
@@ -133,34 +130,49 @@
 
     </script>
     <style>
-        .flipped-horizontal {
+        .flipped-vertical {
             transform: scaleX(-1) translate(50%, -50%);
         }
 
-        .flipped-vertical {
+        .flipped-horizontal {
             transform: scaleY(-1) translate(-50%, 50%);
         }
 
-        .flipped-horizontal.flipped-vertical {
+        .flipped-vertical.flipped-horizontal {
             transform: rotate(180deg) translate(50%, 50%);
         }
 
-     
-        body{
-            width:100vw;
-            height:100vh;
-            overflow:hidden;
+
+        body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
             position: relative;
         }
 
-        video{
-            
+        video {
+
             transform: translate(-50%, -50%);
         }
 
-        .ratio{
-            height:100vh;
-         
+        .ratio {
+            height: 100vh;
+        }
+
+        .is-fullscreen .visible-on-fullscreen {
+            display: initial;
+        }
+
+        .is-fullscreen .hidden-on-fullscreen {
+            display: none;
+        }
+
+        body:not(.is-fullscreen) .visible-on-fullscreen {
+            display: none;
+        }
+
+        body:not(.is-fullscreen) .hidden-on-fullscreen {
+            display: initial;
         }
     </style>
 </head>
@@ -170,10 +182,17 @@
     <div class="position-absolute ratio">
         <video class="position-absolute start-50 top-50"></video>
     </div>
-    <div class="btn-group position-absolute top-0 end-0">
-        <button class="btn btn-primary toggle-fullscreen">Fullscreen</button>
-        <button class="btn btn-primary flip-horizontal">Flip horizontal</button>
-        <button class="btn btn-primary flip-vertical">Flip vertical</button>
+    <div class="btn-group btn-group-lg position-absolute bottom-0 end-0">
+        <button class="btn btn-lg btn-primary toggle-fullscreen">
+            <i class="bi bi-fullscreen hidden-on-fullscreen"></i>
+            <i class="bi bi-fullscreen-exit visible-on-fullscreen"></i>(f)
+        </button>
+        <button class="btn btn-lg btn-primary flip-vertical">
+            <i class="bi bi-symmetry-vertical"></i>(v)
+        </button>
+        <button class="btn btn-lg btn-primary flip-horizontal">
+            <i class="bi bi-symmetry-horizontal"></i>(h)
+        </button>
     </div>
 
     <!--
