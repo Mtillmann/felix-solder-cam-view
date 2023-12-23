@@ -47,6 +47,8 @@
             //get current video resolution
             const videoTrack = stream.getVideoTracks()[0]
             const settings = videoTrack.getSettings()
+
+
             //get aspect ratio
             const aspectRatio = settings.aspectRatio
             let ratio = '16x9'
@@ -55,21 +57,30 @@
             }
             document.querySelector('.ratio').classList.add(`ratio-${ratio}`)
 
-            //get current frame rate
-            const frameRate = settings.frameRate
-            console.log(frameRate)
+            function setInfo() {
+                const settings = videoTrack.getSettings()
+                //get current frame rate
+                const frameRate = settings.frameRate
+                
 
-            document.querySelector('#videoInfo').innerHTML = `${settings.width}x${settings.height}@${frameRate}`
+                //get actual size of video
+                const domDims = video.getBoundingClientRect()
+
+                const actualSize = Math.min(domDims.width / settings.width, domDims.height / settings.height)
+                
+                const perc = (Math.round(actualSize * 10000) * 0.01).toFixed(2) + '%'
+
+                const actualWidth = Math.round(settings.width * actualSize)
+                const actualHeight = Math.round(settings.height * actualSize)
+
+                document.querySelector('#videoInfo').innerHTML = `${settings.width}x${settings.height}@${frameRate}fps (${perc}: ${actualWidth}x${actualHeight})`
+
+            }
+
+            setInfo()
 
 
 
-            /*
-            video.addEventListener('click', () => {
-                canvas.width = video.videoWidth
-                canvas.height = video.videoHeight
-                canvas.getContext('2d').drawImage(video, 0, 0)
-            });
-*/
             document.querySelector('.download').addEventListener('click', () => {
                 canvas.width = video.videoWidth
                 canvas.height = video.videoHeight
@@ -85,7 +96,7 @@
                 ctx.translate(-canvas.width / 2, -canvas.height / 2)
                 ctx.drawImage(video, 0, 0)
 
-                
+
                 const a = document.createElement('a')
                 a.href = canvas.toDataURL()
                 const now = new Date().toLocaleString()
@@ -111,6 +122,8 @@
 
                 document.querySelector('.toggle-fullscreen').classList.toggle('active', document.fullscreenElement)
                 document.querySelector('body').classList.toggle('is-fullscreen', document.fullscreenElement)
+            
+                setInfo()
             })
 
             document.addEventListener('keydown', (e) => {
@@ -200,10 +213,11 @@
             display: initial;
         }
 
-        canvas{
-            position:absolute;
-            left:-200vw;
-            top: -200vh;
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translate(-100%, -100%);
 
         }
     </style>
@@ -220,7 +234,7 @@
 
     </div>
 
-    <div class="btn-group-vertical btn-group-lg position-absolute bottom-0 end-0">
+    <div class="btn-group-vertical btn-group-lg position-absolute top-50 translate-middle-y end-0">
         <button class="btn btn-lg btn-primary toggle-fullscreen">
             <i class="bi bi-fullscreen hidden-on-fullscreen"></i>
             <i class="bi bi-fullscreen-exit visible-on-fullscreen"></i><code class="ms-2 text-white">f</code>
