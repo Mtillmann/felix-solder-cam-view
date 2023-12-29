@@ -40,7 +40,8 @@ export async function camView() {
 
 
     //get all camera capabilities
-    const capabilities = videoTrack.getCapabilities()
+    const capabilities = await videoTrack.getCapabilities()
+    console.log({capabilities})
 
     //get all current camera settings
     let cameraSettings = Object.entries(videoTrack.getSettings()).reduce((acc, [key, value]) => {
