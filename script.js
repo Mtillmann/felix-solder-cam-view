@@ -73,6 +73,7 @@ export async function camView() {
         editor.top().left();
         editor.theme("dark");
 
+        //console.log(editor)
 
         for (const key in cameraSettings) {
             if (Array.isArray(capabilities[key])) {
@@ -190,6 +191,10 @@ export async function camView() {
         document.querySelector('.toggle-fullscreen').classList.toggle('active', document.fullscreenElement)
         document.querySelector('body').classList.toggle('is-fullscreen', document.fullscreenElement)
 
+        setInfo()
+    })
+
+    window.addEventListener('resize', () => {
         setInfo()
     })
 
