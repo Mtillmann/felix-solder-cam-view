@@ -55,6 +55,7 @@ export async function camView() {
             return acc
         }
 
+        console.log('using', key, value);
         acc[key] = value
         return acc
     }, {});
