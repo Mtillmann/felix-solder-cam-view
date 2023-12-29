@@ -41,7 +41,7 @@ export async function camView() {
 
     //get all camera capabilities
     const capabilities = await videoTrack.getCapabilities()
-    console.log({capabilities})
+    console.log({ capabilities })
 
     //get all current camera settings
     let cameraSettings = Object.entries(videoTrack.getSettings()).reduce((acc, [key, value]) => {
@@ -61,45 +61,52 @@ export async function camView() {
         return acc
     }, {});
 
-    const editor = new Editor("sample", "Cam Settings", () => cameraSettings);
-    editor.top().left();
-    editor.theme("neu-dark");
-    
 
-    for (const key in cameraSettings) {
-        if (Array.isArray(capabilities[key])) {
-            const input = editor.root
-                .addProperty(key, key, "select")
-                .change(setCameraSettings);
-            capabilities[key].forEach((item) => {
-                input.addItem(item);
-            });
-        } else if (typeof cameraSettings[key] === 'number') {
-            const input = editor.root.addProperty(key, key, 'number')
-                .change(setCameraSettings)
-                .min(capabilities[key].min)
-                .max(capabilities[key].max)
-                .step(capabilities[key].step ?? 1);
-        }
+    if (Object.keys(capabilities).length === 0) {
+        document.body.classList.add('no-camera-settings')
     }
+    else {
 
-    let defaultCameraSettings = JSON.parse(localStorage.getItem('cam-view-default-cam-settings')) ?? structuredClone(cameraSettings)
-    if (!localStorage.getItem('cam-view-default-cam-settings')) {
-        localStorage.setItem('cam-view-default-cam-settings', JSON.stringify(defaultCameraSettings))
-    }
+        const editor = new Editor("sample", "Cam Settings", () => cameraSettings);
+        editor.top().left();
+        editor.theme("neu-dark");
 
-    function setCameraSettings(writeSettings = true) {
+
         for (const key in cameraSettings) {
-            videoTrack.applyConstraints({ [key]: cameraSettings[key] })
+            if (Array.isArray(capabilities[key])) {
+                const input = editor.root
+                    .addProperty(key, key, "select")
+                    .change(setCameraSettings);
+                capabilities[key].forEach((item) => {
+                    input.addItem(item);
+                });
+            } else if (typeof cameraSettings[key] === 'number') {
+                const input = editor.root.addProperty(key, key, 'number')
+                    .change(setCameraSettings)
+                    .min(capabilities[key].min)
+                    .max(capabilities[key].max)
+                    .step(capabilities[key].step ?? 1);
+            }
         }
 
-        if (writeSettings) {
-            localStorage.setItem('cam-view-cam-settings', JSON.stringify(cameraSettings))
+        let defaultCameraSettings = JSON.parse(localStorage.getItem('cam-view-default-cam-settings')) ?? structuredClone(cameraSettings)
+        if (!localStorage.getItem('cam-view-default-cam-settings')) {
+            localStorage.setItem('cam-view-default-cam-settings', JSON.stringify(defaultCameraSettings))
         }
+
+        function setCameraSettings(writeSettings = true) {
+            for (const key in cameraSettings) {
+                videoTrack.applyConstraints({ [key]: cameraSettings[key] })
+            }
+
+            if (writeSettings) {
+                localStorage.setItem('cam-view-cam-settings', JSON.stringify(cameraSettings))
+            }
+        }
+
+        let storedCameraSettings = JSON.parse(localStorage.getItem('cam-view-cam-settings'));
+        cameraSettings = storedCameraSettings ?? cameraSettings;
     }
-
-    let storedCameraSettings = JSON.parse(localStorage.getItem('cam-view-cam-settings'));
-    cameraSettings = storedCameraSettings ?? cameraSettings;
 
     //get aspect ratio
     const aspectRatio = settings.aspectRatio
