@@ -167,8 +167,8 @@ export function registerSW() {
     (async () => {
         if ("serviceWorker" in navigator) {
             try {
-                const registration = await navigator.serviceWorker.register("/chaptertool/sw.js", {
-                    scope: "/chaptertool/",
+                const registration = await navigator.serviceWorker.register("/felix-solder-cam-view/sw.js", {
+                    scope: "/felix-solder-cam-view/",
                 });
                 if (registration.installing) {
                     console.log("Service worker installing");
