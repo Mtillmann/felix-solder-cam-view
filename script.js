@@ -62,7 +62,7 @@ export async function camView() {
         const actualWidth = Math.round(settings.width * actualSize)
         const actualHeight = Math.round(settings.height * actualSize)
 
-        document.querySelector('#videoInfo').innerHTML = `${settings.width}x${settings.height}@${frameRate}fps (${perc}: ${actualWidth}x${actualHeight})`
+        document.querySelector('#videoInfo').innerHTML = `${settings.width}x${settings.height}@${frameRate.toFixed(2)}fps (${perc}: ${actualWidth}x${actualHeight})`
 
     }
 
@@ -153,7 +153,7 @@ export async function camView() {
 
 
 
-})
+}
 
 
 
