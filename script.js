@@ -1,12 +1,5 @@
 
-function setState() {
-    const data = JSON.stringify({
-        flipY,
-        flipX
-    })
 
-    localStorage.setItem('cam-view-state', data)
-}
 
 
 
@@ -15,6 +8,15 @@ export async function camView() {
     let flipY = false;
     let flipX = false;
 
+
+    function setState() {
+        const data = JSON.stringify({
+            flipY,
+            flipX
+        })
+    
+        localStorage.setItem('cam-view-state', data)
+    }
 
     document.documentElement.setAttribute('data-bs-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 
@@ -63,13 +65,13 @@ export async function camView() {
 
 
     if (Object.keys(capabilities).length === 0) {
-        document.body.classList.add('no-camera-settings')
+        document.querySelector('#noCameraSettings').classList.remove('d-none')
     }
     else {
 
         const editor = new Editor("sample", "Cam Settings", () => cameraSettings);
         editor.top().left();
-        editor.theme("neu-dark");
+        editor.theme("dark");
 
 
         for (const key in cameraSettings) {
@@ -106,6 +108,15 @@ export async function camView() {
 
         let storedCameraSettings = JSON.parse(localStorage.getItem('cam-view-cam-settings'));
         cameraSettings = storedCameraSettings ?? cameraSettings;
+        editor.root.addButton('reset', "Reset").click(() => {
+            console.log('resetting camera settings')
+            for (const key in defaultCameraSettings) {
+                videoTrack.applyConstraints({ [key]: defaultCameraSettings[key] })
+                //reload because there's is no apparent way to set the value on the editor
+                window.location.reload();
+            }
+        });
+        
     }
 
     //get aspect ratio
@@ -135,14 +146,6 @@ export async function camView() {
         document.querySelector('#videoInfo').innerHTML = `${settings.width}x${settings.height}@${frameRate.toFixed(2)}fps (${perc}: ${actualWidth}x${actualHeight})`
     }
 
-    editor.root.addButton('reset', "Reset").click(() => {
-        console.log('resetting camera settings')
-        for (const key in defaultCameraSettings) {
-            videoTrack.applyConstraints({ [key]: defaultCameraSettings[key] })
-            //reload because there's is no apparent way to set the value on the editor
-            window.location.reload();
-        }
-    });
     setInfo()
 
     document.querySelector('.download').addEventListener('click', () => {
