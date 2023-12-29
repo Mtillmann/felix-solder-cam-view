@@ -8,6 +8,7 @@ function setState() {
     localStorage.setItem('cam-view-state', data)
 }
 
+
 export async function camView() {
 
     let flipY = false;
@@ -28,7 +29,6 @@ export async function camView() {
         }
     }
 
-
     const stream = await navigator.mediaDevices.getUserMedia(constraints)
     video.srcObject = stream;
     await video.play()
@@ -37,6 +37,57 @@ export async function camView() {
     const videoTrack = stream.getVideoTracks()[0]
     const settings = videoTrack.getSettings()
 
+
+    //get all camera capabilities
+    const capabilities = videoTrack.getCapabilities()
+    console.log(capabilities)
+
+    //get all current camera settings
+    const data = Object.entries(videoTrack.getSettings()).reduce((acc, [key, value]) => {
+
+        if (['resizeMode', 'frameRate', 'aspectRatio', 'width', 'height', 'deviceId', 'groupId'].includes(key)) {
+            console.log('skipping', key)
+            return acc
+        }
+
+        if (!capabilities[key]) {
+            console.log('no capability for', key)
+            return acc
+        }
+
+        acc[key] = value
+        return acc
+    }, {});
+
+    const editor = new Editor("sample", "Cam Settings", () => data);
+    editor.top().left();
+    editor.theme("dark");
+
+    for (const key in data) {
+        if (Array.isArray(capabilities[key])) {
+            const input = editor.root
+                .addProperty(key, key, "select")
+                .change(setCameraSettings);
+            capabilities[key].forEach((item) => {
+                input.addItem(item);
+            });
+        }else if (typeof data[key] === 'number') {
+            const input = editor.root.addProperty(key, key, 'number')
+            .change(setCameraSettings)
+            .min(capabilities[key].min)
+            .max(capabilities[key].max)
+            .step(capabilities[key].step ?? 1);
+        }
+    }
+
+    function setCameraSettings() {
+
+        for(const key in data){
+            videoTrack.applyConstraints({[key]: data[key]})
+        }
+        //videoTrack.applyConstraints(data);
+        
+    }
 
     //get aspect ratio
     const aspectRatio = settings.aspectRatio
@@ -159,7 +210,7 @@ export async function camView() {
 
 
 export function registerSW() {
-    if (/localhost/.test(new URL(window.location).host)) {
+    if (/localhost|127\.0\.0\.1/.test(new URL(window.location).host)) {
         console.log(`skipping service worker for localhost...`);
         return;
     }
