@@ -9,6 +9,7 @@ function setState() {
 }
 
 
+
 export async function camView() {
 
     let flipY = false;
@@ -43,7 +44,7 @@ export async function camView() {
     console.log(capabilities)
 
     //get all current camera settings
-    const data = Object.entries(videoTrack.getSettings()).reduce((acc, [key, value]) => {
+    let cameraSettings = Object.entries(videoTrack.getSettings()).reduce((acc, [key, value]) => {
 
         if (['resizeMode', 'frameRate', 'aspectRatio', 'width', 'height', 'deviceId', 'groupId'].includes(key)) {
             console.log('skipping', key)
@@ -59,11 +60,12 @@ export async function camView() {
         return acc
     }, {});
 
-    const editor = new Editor("sample", "Cam Settings", () => data);
+    const editor = new Editor("sample", "Cam Settings", () => cameraSettings);
     editor.top().left();
-    editor.theme("dark");
+    editor.theme("neu-dark");
+    
 
-    for (const key in data) {
+    for (const key in cameraSettings) {
         if (Array.isArray(capabilities[key])) {
             const input = editor.root
                 .addProperty(key, key, "select")
@@ -71,23 +73,32 @@ export async function camView() {
             capabilities[key].forEach((item) => {
                 input.addItem(item);
             });
-        }else if (typeof data[key] === 'number') {
+        } else if (typeof cameraSettings[key] === 'number') {
             const input = editor.root.addProperty(key, key, 'number')
-            .change(setCameraSettings)
-            .min(capabilities[key].min)
-            .max(capabilities[key].max)
-            .step(capabilities[key].step ?? 1);
+                .change(setCameraSettings)
+                .min(capabilities[key].min)
+                .max(capabilities[key].max)
+                .step(capabilities[key].step ?? 1);
         }
     }
 
-    function setCameraSettings() {
-
-        for(const key in data){
-            videoTrack.applyConstraints({[key]: data[key]})
-        }
-        //videoTrack.applyConstraints(data);
-        
+    let defaultCameraSettings = JSON.parse(localStorage.getItem('cam-view-default-cam-settings')) ?? structuredClone(cameraSettings)
+    if (!localStorage.getItem('cam-view-default-cam-settings')) {
+        localStorage.setItem('cam-view-default-cam-settings', JSON.stringify(defaultCameraSettings))
     }
+
+    function setCameraSettings(writeSettings = true) {
+        for (const key in cameraSettings) {
+            videoTrack.applyConstraints({ [key]: cameraSettings[key] })
+        }
+
+        if (writeSettings) {
+            localStorage.setItem('cam-view-cam-settings', JSON.stringify(cameraSettings))
+        }
+    }
+
+    let storedCameraSettings = JSON.parse(localStorage.getItem('cam-view-cam-settings'));
+    cameraSettings = storedCameraSettings ?? cameraSettings;
 
     //get aspect ratio
     const aspectRatio = settings.aspectRatio
@@ -114,12 +125,17 @@ export async function camView() {
         const actualHeight = Math.round(settings.height * actualSize)
 
         document.querySelector('#videoInfo').innerHTML = `${settings.width}x${settings.height}@${frameRate.toFixed(2)}fps (${perc}: ${actualWidth}x${actualHeight})`
-
     }
 
+    editor.root.addButton('reset', "Reset").click(() => {
+        console.log('resetting camera settings')
+        for (const key in defaultCameraSettings) {
+            videoTrack.applyConstraints({ [key]: defaultCameraSettings[key] })
+            //reload because there's is no apparent way to set the value on the editor
+            window.location.reload();
+        }
+    });
     setInfo()
-
-
 
     document.querySelector('.download').addEventListener('click', () => {
         canvas.width = video.videoWidth
