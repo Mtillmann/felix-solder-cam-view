@@ -233,9 +233,6 @@ export async function camView() {
     if (storedState.flipX) {
         document.querySelector('.flip-horizontal').click()
     }
-
-
-
 }
 
 
