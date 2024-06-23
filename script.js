@@ -1,4 +1,4 @@
-import { startRecording, endRecording, downloadBlob } from './video-recorder.js';
+import { startRecording, endRecording, exportVideo } from './mediaRecorder.js';
 
 
 
@@ -208,7 +208,7 @@ export async function camView() {
     document.querySelector('.record-video').addEventListener('click', (e) => {
         if (isRecording) {
             endRecording()
-            downloadBlob()
+            exportVideo()
             isRecording = false
             e.currentTarget.classList.remove('active')
         } else {
