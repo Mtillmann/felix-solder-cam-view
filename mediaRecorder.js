@@ -59,7 +59,8 @@ export function startRecording() {
     isRecording = true;
 
     mimeType = localStorage.getItem('cam-view-codec') ?? 'video/mp4';
-    downloadTimeoutDuration = (parseInt(localStorage.getItem('cam-view-timeout')) ?? 60) * 1000;
+    downloadTimeoutDuration = (parseInt(localStorage.getItem('cam-view-timeout')) || 60) * 1000;
+    
 
     const recordingCtx = canvas.getContext('2d');
     recorder = new MediaRecorder(recordingCtx.canvas.captureStream(30), {
