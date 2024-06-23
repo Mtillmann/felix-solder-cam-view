@@ -6,7 +6,11 @@ export async function camView() {
 
     let flipY = false;
     let flipX = false;
+    let isRecording = false;
 
+    const video = document.querySelector('video')
+    const canvas = document.querySelector('canvas')
+    const ctx = canvas.getContext('2d')
 
     function setState() {
         const data = JSON.stringify({
@@ -17,16 +21,29 @@ export async function camView() {
         localStorage.setItem('cam-view-state', data)
     }
 
+    function applyCanvasTransforms() {
+        canvas.width = video.videoWidth
+        canvas.height = video.videoHeight
+
+        ctx.translate(canvas.width / 2, canvas.height / 2)
+        if (flipY) {
+            ctx.scale(-1, 1)
+        }
+        if (flipX) {
+            ctx.scale(1, -1)
+        }
+        ctx.translate(-canvas.width / 2, -canvas.height / 2)
+    }
+
+
     document.documentElement.setAttribute('data-bs-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-        new bootstrap.Tooltip(el)
+        new bootstrap.Tooltip(el ,{trigger:'hover'})
     });
 
 
-    const video = document.querySelector('video')
-    const canvas = document.querySelector('canvas')
-    const button = document.querySelector('button')
+    
 
     const constraints = {
         video: {
@@ -38,6 +55,17 @@ export async function camView() {
 
     const stream = await navigator.mediaDevices.getUserMedia(constraints)
     video.srcObject = stream;
+    
+
+    video.addEventListener('play', function () {
+        let draw = function (now, metadata) {
+            if (video.paused || video.ended) return;
+            ctx.drawImage(video, 0, 0)
+            video.requestVideoFrameCallback(draw);
+        };
+        video.requestVideoFrameCallback(draw);
+    });
+
     await video.play()
 
     //get current video resolution
@@ -154,21 +182,6 @@ export async function camView() {
     setInfo()
 
     document.querySelector('.download').addEventListener('click', () => {
-        canvas.width = video.videoWidth
-        canvas.height = video.videoHeight
-
-        const ctx = canvas.getContext('2d')
-        ctx.translate(canvas.width / 2, canvas.height / 2)
-        if (flipY) {
-            ctx.scale(-1, 1)
-        }
-        if (flipX) {
-            ctx.scale(1, -1)
-        }
-        ctx.translate(-canvas.width / 2, -canvas.height / 2)
-        ctx.drawImage(video, 0, 0)
-
-
         const a = document.createElement('a')
         a.href = canvas.toDataURL()
         const now = new Date().toLocaleString()
@@ -179,16 +192,32 @@ export async function camView() {
     document.querySelector('.flip-vertical').addEventListener('click', (e) => {
         flipY = !flipY
         e.currentTarget.classList.toggle('active', flipY)
-        video.classList.toggle('flipped-vertical', flipY)
+        //canvas.classList.toggle('flipped-vertical', flipY)
+        applyCanvasTransforms()
         setState()
     });
 
     document.querySelector('.flip-horizontal').addEventListener('click', (e) => {
         flipX = !flipX
         e.currentTarget.classList.toggle('active', flipX)
-        video.classList.toggle('flipped-horizontal', flipX)
+        //canvas.classList.toggle('flipped-horizontal', flipX)
+        applyCanvasTransforms()
         setState()
     });
+
+    document.querySelector('.record-video').addEventListener('click', (e) => {
+        if (isRecording) {
+            endRecording()
+            downloadBlob()
+            isRecording = false
+            e.currentTarget.classList.remove('active')
+        } else {
+            startRecording()
+            isRecording = true
+            e.currentTarget.classList.add('active')
+        }
+    });
+
 
     document.addEventListener('fullscreenchange', (e) => {
 
@@ -237,6 +266,8 @@ export async function camView() {
     if (storedState.flipX) {
         document.querySelector('.flip-horizontal').click()
     }
+
+    applyCanvasTransforms()
 }
 
 

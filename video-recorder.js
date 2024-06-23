@@ -74,10 +74,6 @@ const encodeVideoFrame = () => {
 
     videoEncoder.encode(frame, { keyFrame: needsKeyFrame });
     frame.close();
-    /*
-        recordingStatus.textContent =
-            `${elapsedTime % 1000 < 500 ? '🔴' : '⚫'} Recording - ${(elapsedTime / 1000).toFixed(1)} s`;
-            */
 };
 
 const endRecording = async () => {
