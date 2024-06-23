@@ -1,6 +1,7 @@
 let canvas;
 let recorder;
 let chunks = [];
+let mimeType = localStorage.getItem('cam-view-timeout') ?? 'video/mp4';
 
 document.addEventListener('DOMContentLoaded', () => {
     canvas = document.querySelector('canvas');
@@ -47,7 +48,8 @@ export function supportedCodecs() {
     return getAllSupportedMimeTypes('video');
 }
 
-export function startRecording(mimeType = 'video/webm;codecs=h264') {
+export function startRecording() {
+    
     const recordingCtx = canvas.getContext('2d');
     recorder = new MediaRecorder(recordingCtx.canvas.captureStream(30), {
         mimeType
@@ -72,7 +74,29 @@ export function exportVideo() {
     a.style.display = 'none';
     a.href = url;
     const now = new Date().toLocaleString()
-    a.download = `solder-recording-${now}.mp4`
+
+    let extension = mimeType.split(';')[0].split('/')[1];
+    if(extension === 'x-matroska') {
+        extension = 'mkv';
+    }
+    if(extension === 'x-mp4') {
+        extension = 'mp4';
+    }
+    if(extension === 'x-3gpp') {
+        extension = '3gp';
+    }
+    if(extension === 'x-quicktime') {
+        extension = 'mov';
+    }
+    if(extension === 'x-wav') {
+        extension = 'wav';
+    }
+    if(extension === 'x-flac') {
+        extension = 'flac';
+    }
+
+
+    a.download = `solder-recording-${now}.${extension}`
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);

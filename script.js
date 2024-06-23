@@ -1,4 +1,4 @@
-import { startRecording, endRecording, exportVideo } from './mediaRecorder.js';
+import { startRecording, endRecording, exportVideo, supportedCodecs } from './mediaRecorder.js';
 
 
 
@@ -39,11 +39,11 @@ export async function camView() {
     document.documentElement.setAttribute('data-bs-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
 
     document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-        new bootstrap.Tooltip(el ,{trigger:'hover'})
+        new bootstrap.Tooltip(el, { trigger: 'hover' })
     });
 
 
-    
+
 
     const constraints = {
         video: {
@@ -55,7 +55,7 @@ export async function camView() {
 
     const stream = await navigator.mediaDevices.getUserMedia(constraints)
     video.srcObject = stream;
-    
+
 
     video.addEventListener('play', function () {
         let draw = function (now, metadata) {
@@ -72,25 +72,23 @@ export async function camView() {
     const videoTrack = stream.getVideoTracks()[0]
     const settings = videoTrack.getSettings()
 
-
     //get all camera capabilities
     const capabilities = await videoTrack.getCapabilities()
-    console.log({ capabilities })
 
     //get all current camera settings
     let cameraSettings = Object.entries(videoTrack.getSettings()).reduce((acc, [key, value]) => {
 
         if (['resizeMode', 'frameRate', 'aspectRatio', 'width', 'height', 'deviceId', 'groupId'].includes(key)) {
-            console.log('skipping', key)
+            //console.log('skipping', key)
             return acc
         }
 
         if (!capabilities[key]) {
-            console.log('no capability for', key)
+            //console.log('no capability for', key)
             return acc
         }
 
-        console.log('using', key, value);
+        //console.log('using', key, value);
         acc[key] = value
         return acc
     }, {});
@@ -100,12 +98,10 @@ export async function camView() {
         document.querySelector('#noCameraSettings').classList.remove('d-none')
     }
     else {
-
         const editor = new Editor("sample", "Cam Settings", () => cameraSettings);
         editor.top().left();
         editor.theme("dark");
 
-        //console.log(editor)
 
         for (const key in cameraSettings) {
             if (Array.isArray(capabilities[key])) {
@@ -150,6 +146,7 @@ export async function camView() {
             }
         });
 
+        editor.root.toggleCollapse(true)
     }
 
     //get aspect ratio
@@ -159,6 +156,43 @@ export async function camView() {
         ratio = '4x3';
     }
     document.querySelector('.ratio').classList.add(`ratio-${ratio}`)
+
+
+    const storedCodec = localStorage.getItem('cam-view-codec')
+    const storedTimeout = localStorage.getItem('cam-view-timeout')  
+
+    window.videoEditor = new Editor("video", "Record Settings", () => {
+        return {
+            codec: storedCodec ?? 'video/webm;codecs=vp9',
+            timeout: storedTimeout ?? 60
+        }
+    });
+    videoEditor.top().right();
+    videoEditor.theme("dark");
+    videoEditor.root.toggleCollapse(true)
+
+    const codecSelector = videoEditor.root
+        .addProperty('codec', 'Output', "select")
+        .change(storeCodec);
+    supportedCodecs().forEach((item) => {
+        codecSelector.addItem(item);
+    });
+
+    const timeoutSlider = videoEditor.root.addProperty('timeout', 'timeout (sec)', 'number')
+    .change(storeTimeout)
+    .min(10)
+    .max(600)
+    .step(1);
+
+    function storeCodec() {
+        localStorage.setItem('cam-view-codec', codecSelector.value)
+    }
+    
+    function storeTimeout() {
+        localStorage.setItem('cam-view-timeout', parseInt(timeoutSlider.value))
+    }
+
+
 
     function setInfo() {
         const settings = videoTrack.getSettings()
