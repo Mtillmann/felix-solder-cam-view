@@ -1,5 +1,11 @@
 
 
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+        console.log(el)
+        new bootstrap.Tooltip(el)
+    });
+});
 
 
 

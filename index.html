@@ -94,18 +94,23 @@
 
 
     <div class="btn-group-vertical btn-group-lg position-absolute top-50 translate-middle-y end-0">
-        <button class="btn btn-lg btn-primary toggle-fullscreen">
-            <i class="bi bi-fullscreen hidden-on-fullscreen"></i>
-            <i class="bi bi-fullscreen-exit visible-on-fullscreen"></i><code class="ms-2 text-white">f</code>
+        <button 
+            data-bs-toggle="tooltip" data-bs-title="toggle fullscreen"
+            class="btn btn-lg btn-primary toggle-fullscreen d-flex align-items-center">
+            <i class="bi bi-fullscreen hidden-on-fullscreen pt-1"></i>
+            <i class="bi bi-fullscreen-exit visible-on-fullscreen pt-1"></i><code class="ms-2 text-white"><kbd>f</kbd></code>
         </button>
-        <button class="btn btn-lg btn-primary flip-vertical">
-            <i class="bi bi-symmetry-vertical"></i><code class="ms-2 text-white">v</code>
+        <button class="btn btn-lg btn-primary flip-vertical d-flex align-items-center">
+            <i class="bi bi-symmetry-vertical pt-1"></i><code class="ms-2 text-white"><kbd>v</kbd></code>
         </button>
-        <button class="btn btn-lg btn-primary flip-horizontal">
-            <i class="bi bi-symmetry-horizontal"></i><code class="ms-2 text-white">h</code>
+        <button class="btn btn-lg btn-primary flip-horizontal d-flex align-items-center">
+            <i class="bi bi-symmetry-horizontal pt-1"></i><code class="ms-2 text-white"><kbd>h</kbd></code>
         </button>
-        <button class="btn btn-lg btn-primary download">
-            <i class="bi bi-download"></i><code class="ms-2 text-white">d</code>
+        <button class="btn btn-lg btn-primary download  d-flex align-items-center">
+            <i class="bi bi-download pt-1"></i><code class="ms-2 text-white"><kbd>d</kbd></code>
+        </button>
+        <button class="btn btn-lg btn-primary download  d-flex align-items-center">
+            <i class="bi bi-record-circle pt-1"></i><code class="ms-2 text-white"><kbd>r</kbd></code>
         </button>
     </div>
 
