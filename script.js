@@ -1,4 +1,4 @@
-import { startRecording, endRecording, exportVideo, supportedCodecs } from './mediaRecorder.js';
+import { isRecording, startRecording, endRecording, exportVideo, supportedCodecs } from './mediaRecorder.js';
 
 
 
@@ -6,7 +6,6 @@ export async function camView() {
 
     let flipY = false;
     let flipX = false;
-    let isRecording = false;
 
     const video = document.querySelector('video')
     const canvas = document.querySelector('canvas')
@@ -243,12 +242,9 @@ export async function camView() {
         if (isRecording) {
             endRecording()
             exportVideo()
-            isRecording = false
-            e.currentTarget.classList.remove('active')
+            
         } else {
             startRecording()
-            isRecording = true
-            e.currentTarget.classList.add('active')
         }
     });
 
@@ -280,6 +276,10 @@ export async function camView() {
 
         if (e.key === 'd') {
             document.querySelector('.download').click()
+        }
+
+        if (e.key === 'r') {
+            document.querySelector('.record-video').click()
         }
 
     })

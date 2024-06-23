@@ -1,134 +1,176 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CAM VIEW</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
+      crossorigin="anonymous"
+    />
 
-    <link rel="manifest" href="/felix-solder-cam-view/manifest.webmanifest">
-    
-    <link href="https://cdn.jsdelivr.net/npm/object-gui@2/dist/css/object-gui.css" rel="stylesheet">
+    <link rel="manifest" href="/felix-solder-cam-view/manifest.webmanifest" />
+
+    <link
+      href="https://cdn.jsdelivr.net/npm/object-gui@2/dist/css/object-gui.css"
+      rel="stylesheet"
+    />
 
     <script src="https://cdn.jsdelivr.net/npm/object-gui@2/dist/js/object-gui.min.js"></script>
     <script src="mp4-muxer.js"></script>
-    
+
     <script type="module">
-        import { camView, registerSW } from './script.js';
-        
-        registerSW();
-        document.addEventListener('DOMContentLoaded', camView);
+      import { camView, registerSW } from "./script.js";
+
+      registerSW();
+      document.addEventListener("DOMContentLoaded", camView);
     </script>
     <style>
-        .flipped-vertical {
-            transform: scaleX(-1) translate(50%, -50%);
-        }
+      .flipped-vertical {
+        transform: scaleX(-1) translate(50%, -50%);
+      }
 
-        .flipped-horizontal {
-            transform: scaleY(-1) translate(-50%, 50%);
-        }
+      .flipped-horizontal {
+        transform: scaleY(-1) translate(-50%, 50%);
+      }
 
-        .flipped-vertical.flipped-horizontal {
-            transform: rotate(180deg) translate(50%, 50%);
-        }
+      .flipped-vertical.flipped-horizontal {
+        transform: rotate(180deg) translate(50%, 50%);
+      }
 
+      body {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden;
+        position: relative;
+      }
 
-        body {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-            position: relative;
-        }
+      video {
+        display: none;
+        transform: translate(-50%, -50%);
+      }
 
-        video {
-            display:none;            
-            transform: translate(-50%, -50%);
-        }
+      .ratio {
+        height: 100vh;
+      }
 
-        .ratio {
-            height: 100vh;
-        }
+      .is-fullscreen .visible-on-fullscreen {
+        display: initial;
+      }
 
-        .is-fullscreen .visible-on-fullscreen {
-            display: initial;
-        }
+      .is-fullscreen .hidden-on-fullscreen {
+        display: none;
+      }
 
-        .is-fullscreen .hidden-on-fullscreen {
-            display: none;
-        }
+      body:not(.is-fullscreen) .visible-on-fullscreen {
+        display: none;
+      }
 
-        body:not(.is-fullscreen) .visible-on-fullscreen {
-            display: none;
-        }
+      body:not(.is-fullscreen) .hidden-on-fullscreen {
+        display: initial;
+      }
 
-        body:not(.is-fullscreen) .hidden-on-fullscreen {
-            display: initial;
+      @keyframes anim-half {
+        50% {
+          background-color: #e50000;
+          border-color: #75d13f;
+          border-right-width: 4.8em;
         }
+      }
 
-        canvas {
-            /*
-            position: absolute;
-            top: 0;
-            left: 0;
-            transform: translate(-100%, -100%);
-            */
+      @keyframes anim {
+        to {
+          color: #ff0000;
         }
+      }
+
+      .record-video.active i {
+        animation-duration: 0.2s;
+        animation-iteration-count: infinite;
+        animation-name: anim;
+        animation-direction: alternate;
+      }
     </style>
-</head>
+  </head>
 
-<body>
-
+  <body>
     <div class="position-absolute ratio">
-        <canvas class="position-absolute translate-middle start-50 top-50 object-fit-contain"></canvas>
-        <video class="position-absolute start-50 top-50"></video>
+      <canvas
+        class="position-absolute translate-middle start-50 top-50 object-fit-contain"
+      ></canvas>
+      <video class="position-absolute start-50 top-50"></video>
     </div>
 
-    <div id="videoInfo"
-        class="small position-absolute start-0 bottom-0 bg-black text-white font-monospace bg-opacity-25">
+    <div
+      id="videoInfo"
+      class="small position-absolute start-0 bottom-0 bg-black text-white font-monospace bg-opacity-25"
+    ></div>
+
+    <div
+      id="noCameraSettings"
+      class="d-none small position-absolute start-0 top-0 bg-black text-white font-monospace bg-opacity-25"
+    >
+      no camera settings available :(
     </div>
 
-    <div id="noCameraSettings"
-        class="d-none small position-absolute start-0 top-0 bg-black text-white font-monospace bg-opacity-25">
-        no camera settings available :(
+    <div
+      class="btn-group-vertical btn-group-lg position-absolute top-50 translate-middle-y end-0"
+    >
+      <button
+        data-bs-toggle="tooltip"
+        data-bs-title="toggle fullscreen"
+        class="btn btn-lg btn-primary toggle-fullscreen d-flex align-items-center"
+      >
+        <i class="bi bi-fullscreen hidden-on-fullscreen pt-1"></i>
+        <i class="bi bi-fullscreen-exit visible-on-fullscreen pt-1"></i
+        ><code class="ms-2 text-white"><kbd>f</kbd></code>
+      </button>
+      <button
+        data-bs-toggle="tooltip"
+        data-bs-title="flip vertically"
+        class="btn btn-lg btn-primary flip-vertical d-flex align-items-center"
+      >
+        <i class="bi bi-symmetry-vertical pt-1"></i
+        ><code class="ms-2 text-white"><kbd>v</kbd></code>
+      </button>
+      <button
+        data-bs-toggle="tooltip"
+        data-bs-title="flip horizontally"
+        class="btn btn-lg btn-primary flip-horizontal d-flex align-items-center"
+      >
+        <i class="bi bi-symmetry-horizontal pt-1"></i
+        ><code class="ms-2 text-white"><kbd>h</kbd></code>
+      </button>
+      <button
+        data-bs-toggle="tooltip"
+        data-bs-title="download image"
+        class="btn btn-lg btn-primary download d-flex align-items-center"
+      >
+        <i class="bi bi-download pt-1"></i
+        ><code class="ms-2 text-white"><kbd>d</kbd></code>
+      </button>
+      <button
+        class="btn btn-lg btn-primary record-video d-flex align-items-center"
+        data-bs-toggle="tooltip"
+        data-bs-title="start/stop recording"
+      >
+        <i class="bi bi-record-circle pt-1"></i
+        ><code class="ms-2 text-white"><kbd>r</kbd></code>
+      </button>
     </div>
-
-    <div class="btn-group-vertical btn-group-lg position-absolute top-50 translate-middle-y end-0">
-        <button 
-            data-bs-toggle="tooltip" data-bs-title="toggle fullscreen"
-            class="btn btn-lg btn-primary toggle-fullscreen d-flex align-items-center">
-            <i class="bi bi-fullscreen hidden-on-fullscreen pt-1"></i>
-            <i class="bi bi-fullscreen-exit visible-on-fullscreen pt-1"></i><code class="ms-2 text-white"><kbd>f</kbd></code>
-        </button>
-        <button 
-            data-bs-toggle="tooltip" data-bs-title="flip vertically"
-            class="btn btn-lg btn-primary flip-vertical d-flex align-items-center">
-            <i class="bi bi-symmetry-vertical pt-1"></i><code class="ms-2 text-white"><kbd>v</kbd></code>
-        </button>
-        <button 
-            data-bs-toggle="tooltip" data-bs-title="flip horizontally"
-            class="btn btn-lg btn-primary flip-horizontal d-flex align-items-center">
-            <i class="bi bi-symmetry-horizontal pt-1"></i><code class="ms-2 text-white"><kbd>h</kbd></code>
-        </button>
-        <button 
-            data-bs-toggle="tooltip" data-bs-title="download image"
-            class="btn btn-lg btn-primary download  d-flex align-items-center">
-            <i class="bi bi-download pt-1"></i><code class="ms-2 text-white"><kbd>d</kbd></code>
-        </button>
-        <button class="btn btn-lg btn-primary record-video d-flex align-items-center"
-            data-bs-toggle="tooltip" data-bs-title="start/stop recording">
-            <i class="bi bi-record-circle pt-1"></i><code class="ms-2 text-white"><kbd>r</kbd></code>
-        </button>
-    </div>
-
 
     <canvas class="position-absolute translate-middle"></canvas>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
-</body>
-
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+      crossorigin="anonymous"
+    ></script>
+  </body>
 </html>

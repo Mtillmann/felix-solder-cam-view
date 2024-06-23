@@ -1,7 +1,12 @@
 let canvas;
 let recorder;
 let chunks = [];
-let mimeType = localStorage.getItem('cam-view-timeout') ?? 'video/mp4';
+let mimeType;
+let downloadTimeoutDuration;
+
+let dlTimeout = null;
+
+export let isRecording = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     canvas = document.querySelector('canvas');
@@ -49,13 +54,25 @@ export function supportedCodecs() {
 }
 
 export function startRecording() {
-    
+    clearTimeout(dlTimeout);
+    document.querySelector('.record-video').classList.add('active')
+    isRecording = true;
+
+    mimeType = localStorage.getItem('cam-view-codec') ?? 'video/mp4';
+    downloadTimeoutDuration = (parseInt(localStorage.getItem('cam-view-timeout')) ?? 60) * 1000;
+
     const recordingCtx = canvas.getContext('2d');
     recorder = new MediaRecorder(recordingCtx.canvas.captureStream(30), {
         mimeType
     });
     recorder.addEventListener('dataavailable', saveChunks);
-    recorder.start(1000);
+    recorder.start(30);
+
+    dlTimeout = setTimeout(() => {
+        endRecording();
+        exportVideo();
+        alert('Recording has ended automatically due to the timeout')
+    }, downloadTimeoutDuration);
 }
 
 function saveChunks(evt) {
@@ -65,6 +82,9 @@ function saveChunks(evt) {
 }
 
 export function endRecording() {
+    document.querySelector('.record-video').classList.remove('active')
+    clearTimeout(dlTimeout);
+    isRecording = false;
     recorder.stop();
 }
 
