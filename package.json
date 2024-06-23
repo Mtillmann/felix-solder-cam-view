@@ -1,0 +1,15 @@
+{
+  "dependencies": {
+    "mp4-muxer": "^4.3.3"
+  },
+  "name": "felix-solder-cam",
+  "version": "1.0.0",
+  "description": "a simplistic camera view for soldering and such",
+  "main": "script.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Martin Tillmann",
+  "license": "ISC"
+}
