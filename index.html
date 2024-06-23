@@ -14,9 +14,11 @@
     <link href="https://cdn.jsdelivr.net/npm/object-gui@2/dist/css/object-gui.css" rel="stylesheet">
 
     <script src="https://cdn.jsdelivr.net/npm/object-gui@2/dist/js/object-gui.min.js"></script>
+    
+    
     <script type="module">
         import { camView, registerSW } from './script.js';
-
+        
         registerSW();
         document.addEventListener('DOMContentLoaded', camView);
     </script>
@@ -100,16 +102,23 @@
             <i class="bi bi-fullscreen hidden-on-fullscreen pt-1"></i>
             <i class="bi bi-fullscreen-exit visible-on-fullscreen pt-1"></i><code class="ms-2 text-white"><kbd>f</kbd></code>
         </button>
-        <button class="btn btn-lg btn-primary flip-vertical d-flex align-items-center">
+        <button 
+            data-bs-toggle="tooltip" data-bs-title="flip vertically"
+            class="btn btn-lg btn-primary flip-vertical d-flex align-items-center">
             <i class="bi bi-symmetry-vertical pt-1"></i><code class="ms-2 text-white"><kbd>v</kbd></code>
         </button>
-        <button class="btn btn-lg btn-primary flip-horizontal d-flex align-items-center">
+        <button 
+            data-bs-toggle="tooltip" data-bs-title="flip horizontally"
+            class="btn btn-lg btn-primary flip-horizontal d-flex align-items-center">
             <i class="bi bi-symmetry-horizontal pt-1"></i><code class="ms-2 text-white"><kbd>h</kbd></code>
         </button>
-        <button class="btn btn-lg btn-primary download  d-flex align-items-center">
+        <button 
+            data-bs-toggle="tooltip" data-bs-title="download image"
+            class="btn btn-lg btn-primary download  d-flex align-items-center">
             <i class="bi bi-download pt-1"></i><code class="ms-2 text-white"><kbd>d</kbd></code>
         </button>
-        <button class="btn btn-lg btn-primary download  d-flex align-items-center">
+        <button class="btn btn-lg btn-primary download  d-flex align-items-center"
+            data-bs-toggle="tooltip" data-bs-title="start/stop recording">
             <i class="bi bi-record-circle pt-1"></i><code class="ms-2 text-white"><kbd>r</kbd></code>
         </button>
     </div>

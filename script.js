@@ -1,11 +1,4 @@
-
-
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
-        console.log(el)
-        new bootstrap.Tooltip(el)
-    });
-});
+import { startRecording, endRecording, downloadBlob } from './video-recorder.js';
 
 
 
@@ -20,11 +13,16 @@ export async function camView() {
             flipY,
             flipX
         })
-    
+
         localStorage.setItem('cam-view-state', data)
     }
 
     document.documentElement.setAttribute('data-bs-theme', window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+
+    document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+        new bootstrap.Tooltip(el)
+    });
+
 
     const video = document.querySelector('video')
     const canvas = document.querySelector('canvas')
@@ -123,7 +121,7 @@ export async function camView() {
                 window.location.reload();
             }
         });
-        
+
     }
 
     //get aspect ratio
