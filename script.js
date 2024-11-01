@@ -1,8 +1,16 @@
 import { isRecording, startRecording, endRecording, exportVideo, supportedCodecs } from './mediaRecorder.js';
+import registerPedalEvents from './pedal-events.js';
+
+
 
 
 
 export async function camView() {
+
+    registerPedalEvents();
+    
+
+    
 
     let flipY = false;
     let flipX = false;
@@ -260,6 +268,18 @@ export async function camView() {
     window.addEventListener('resize', () => {
         setInfo()
     })
+
+    window.addEventListener('pedal:short', function(event) {
+        if(isRecording) {
+            return document.querySelector('.record-video').click()
+        }
+        document.querySelector('.download').click()
+    });
+
+    window.addEventListener('pedal:long', function(event) {
+        document.querySelector('.record-video').click()
+    });
+    
 
     document.addEventListener('keydown', (e) => {
         if (e.key === 'f') {
